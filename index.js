@@ -3,8 +3,8 @@ const axios = require("axios");
 var jf = require("JotForm");
 
 const bot = new SlackBot({
-    token: 'xoxb-429511273589-430397130311-LWv7pLjqFSJs8KC4CBID6QF4',
-    name: 'JotBot'
+    token: 'your_chat_bot_token',
+    name: 'your-chat_bots_name'
 })
 
 var jotQuestions = {};
@@ -22,7 +22,7 @@ var updateSumbitAsked = false;
 
 jf.options({
     debug: true,
-    apiKey: "19c2d2d3a278d4e78f6761dd8b60f0b0"
+    apiKey: "your_api_key_of_your_jotform_account"
 
 });
 
@@ -39,7 +39,7 @@ bot.on('start', () => {
 bot.on('error', (err) => console.log(err));
 
 //On Message
-bot.on('message', (data) => {
+bot.on('message', (data) => {//it trigger everytime there is a new message posted
     if (data.type !== 'message') {
         return;
     }
@@ -85,7 +85,7 @@ handleMessage = (message) => {
 };
 
 getJotformQuestions = () => {// get question from choosed jotform
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {//returns a promise so i could do so i can perform a sync job
         jf.getFormQuestions('82063977123964')
             .then(function (questions) {
                 /* successful response after request */
@@ -100,12 +100,16 @@ getJotformQuestions = () => {// get question from choosed jotform
     })
 
 }
+/*
+Questions coming from Jotform api is not in order related to question id, 
+they have their own order property.
+*/
 
 handleQuestions = () => {
     askQuestion();
 }
 
-askQuestion = () => {
+askQuestion = () => {//starts asking question, asks first quesiton only
     for (questionId in jotQuestions) {
         if (jotQuestions[questionId].order === '2') {
             lastAnswerId = questionId.toString();
@@ -118,7 +122,7 @@ askQuestion = () => {
     }
 }
 
-handleAnswer = (answer) => {
+handleAnswer = (answer) => {//answer handler
     return new Promise(function (resolve) {
         var emailAnswer = [];
         if (jotQuestions[lastAnswerId].validation === 'Email' && answer.includes('|')) {
@@ -137,7 +141,7 @@ handleAnswer = (answer) => {
 
 }
 
-handleUpdateAnswer = (answer) => {
+handleUpdateAnswer = (answer) => {//update answer hadnler
     return new Promise(function (resolve) {
         var emailAnswer = [];
         if (jotQuestions[updateQId].validation === 'Email' && answer.includes('|')) {
@@ -210,6 +214,19 @@ sendMessage = (message) => {
         resolve();
     })
 }
+
+askUpdate = () => {
+    sendMessage("Do you wish the update your submission")
+        .then(isAskedUpdate = true)
+}
+
+startUpdate = () => {
+    updateConfirm = true;
+    isUpdateQAsked = false;
+    updateSumbitAsked = false;
+    sendMessage("Select question number you would like to update")
+}
+
 confirmSubmit = (answer) => {
     var isformEnd = false;
     switch (answer) {
@@ -259,17 +276,6 @@ checkUpdateSubmit = (answer) => {
             check = false;
     }
     return check;
-}
-
-askUpdate = () => {
-    sendMessage("Do you wish the update your submission")
-        .then(isAskedUpdate = true)
-}
-startUpdate = () => {
-    updateConfirm = true;
-    isUpdateQAsked = false;
-    updateSumbitAsked = false;
-    sendMessage("Select question number you would like to update")
 }
 
 chuckJoke = () => {
